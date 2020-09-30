@@ -1,5 +1,5 @@
 mod thread;
-mod douban;
+mod algorithm;
 
 #[cfg(test)]
 mod tests {
