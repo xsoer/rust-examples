@@ -20,7 +20,12 @@ fn th3(i: u8) -> bool {
     true
 }
 
-fn th4() -> bool{
+fn th4(i: u8) {
+    for i in 0..10 {
+    }
+}
+
+fn th5() -> bool {
     let handle = thread::spawn(|| {
         for i in 1..10 {
             println!("hi number {} from the spawned thread!", i);
