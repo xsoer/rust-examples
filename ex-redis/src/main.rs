@@ -1,5 +1,4 @@
 use redis::Commands;
-use redis::
 
 fn main() {
     fetch_an_integer();
