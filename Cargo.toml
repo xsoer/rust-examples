@@ -8,5 +8,4 @@ members = [
     "ex-kafka-p",
     "ex-redis",
     "ex-regex",
-    "ex-src",
 ]

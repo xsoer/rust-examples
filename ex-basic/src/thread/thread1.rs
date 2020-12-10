@@ -60,8 +60,4 @@ mod tests {
         assert_eq!(th3(8), true);
     }
 
-    #[test]
-    fn th4_print() {
-        assert_eq!(th4(), true);
-    }
 }

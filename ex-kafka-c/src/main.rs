@@ -1,7 +1,10 @@
+use chrono::prelude::*;
 use clap::{App, Arg};
+use env_logger::fmt::Formatter;
+use env_logger::Builder;
 use futures::StreamExt;
 use log::{info, warn};
-use std::io::Write;
+use log::{LevelFilter, Record};
 use rdkafka::client::ClientContext;
 use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
 use rdkafka::consumer::stream_consumer::StreamConsumer;
@@ -10,14 +13,9 @@ use rdkafka::error::KafkaResult;
 use rdkafka::message::{Headers, Message};
 use rdkafka::topic_partition_list::TopicPartitionList;
 use rdkafka::util::get_rdkafka_version;
+use std::io::Write;
 use std::thread;
-use chrono::prelude::*;
-use env_logger::fmt::Formatter;
-use env_logger::Builder;
-use log::{LevelFilter, Record};
-use rdkafka::producer::{FutureProducer, FutureRecord};
-use std::time::Duration;
-use rdkafka::message::OwnedHeaders;
+use serde_json::json;
 
 pub fn setup_logger(log_thread: bool, rust_log: Option<&str>) {
     let output_format = move |formatter: &mut Formatter, record: &Record| {
@@ -50,7 +48,6 @@ pub fn setup_logger(log_thread: bool, rust_log: Option<&str>) {
     builder.init();
 }
 
-
 // A context can be used to change the behavior of producers and consumers by adding callbacks
 // that will be executed by librdkafka.
 // This particular context sets up custom callbacks to log rebalancing events.
@@ -76,7 +73,6 @@ impl ConsumerContext for CustomContext {
 type LoggingConsumer = StreamConsumer<CustomContext>;
 
 async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
-    
     let context = CustomContext;
 
     let consumer: LoggingConsumer = ClientConfig::new()
@@ -114,6 +110,9 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                 info!("key: '{:?}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
                     m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
                 
+                let r = json!(payload);
+                println!("{:?}", r);
+                
                 if let Some(headers) = m.headers() {
                     for i in 0..headers.count() {
                         let header = headers.get(i).unwrap();
@@ -125,7 +124,6 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
         };
     }
 }
-
 
 #[tokio::main]
 async fn main() {
@@ -173,7 +171,10 @@ async fn main() {
     let topics = matches.values_of("topics").unwrap().collect::<Vec<&str>>();
     let brokers = matches.value_of("brokers").unwrap();
     let group_id = matches.value_of("group-id").unwrap();
-    info!("topics {:?}, brokers {}, group_id {}", topics, brokers, group_id);
+    info!(
+        "topics {:?}, brokers {}, group_id {}",
+        topics, brokers, group_id
+    );
 
     consume_and_print(brokers, group_id, &topics).await;
 }
